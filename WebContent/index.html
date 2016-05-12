@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+
+		<script src="resources/sap-ui-core.js"
+				id="sap-ui-bootstrap"
+				data-sap-ui-libs="sap.m, sap.ui.commons"
+				data-sap-ui-theme="sap_bluecrystal">
+		</script>
+		<!-- <script type="text/javascript" src="//api.filestackapi.com/filestack.js"></script> -->
+		
+		<!-- <input type="filepicker" data-fp-apikey="A8FJO85gsTRazpM8R9Mi0z"
+		onchange="alert(event.fpfile.url)"></input> -->
+		<script type="text/javascript"
+   		 src="http://bp.yahooapis.com/2.4.21/browserplus-min.js">
+		</script>
+		<script type="text/javascript"
+   		 src="PictureConversions.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="OrthogonalFilters.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="DWT.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="math.min.js">
+		</script>
+		
+	 	
+		<script type="text/javascript"
+   		 src="MatrixOps.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="numeric-1.2.6.min.js">
+		</script> 
+		
+		
+		
+		<!-- Load plupload 
+		<script type="text/javascript" src="/plupload/js/plupload.full.js"></script> -->
+		<!-- only load the mobile lib "sap.m" and the "sap_bluecrystal" theme -->
+
+		<script>
+				sap.ui.localResources("meldungs_handler");
+				var app = new sap.m.App({initialPage:"idmain1"});
+				var page = sap.ui.view({id:"idmain1", viewName:"meldungs_handler.main", type:sap.ui.core.mvc.ViewType.JS});
+				app.addPage(page);
+				app.placeAt("content");
+		</script>
+		
+		<script>
+		
+		
+		 function fileSelected() {
+			 
+       		 var count = document.getElementById('fileToUpload').files.length;
+ 
+              document.getElementById('details').innerHTML = "";
+ 
+              for (var index = 0; index < count; index ++)
+ 
+              {
+ 
+                     var file = document.getElementById('fileToUpload').files[index];
+ 
+                     var fileSize = 0;
+ 
+                     if (file.size > 1024 * 1024)
+ 
+                            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + ' MB';
+ 
+                     else
+ 
+                            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + ' KB';
+ 
+                     document.getElementById('details').innerHTML += "Size: " + fileSize;
+ 
+                     document.getElementById('details').innerHTML += '<p>';
+              } 
+              
+              
+              /*
+              
+              var image = new Image();
+              
+             
+              var canvas = document.createElement("canvas");
+              
+              var ctx = canvas.getContext("2d");
+        		
+              var currentFile = document.getElementById('fileToUpload').files[0];
+              
+              
+              
+             
+              var fr = new FileReader();
+
+              fr.onload = function() { // file is loaded
+                  
+				var img = new Image();
+                img.src = fr.result; // is the data URL because called with readAsDataURL
+                canvas.height = img.height;
+                canvas.width = img.width;
+               
+                
+                document.getElementById('content2').appendChild(img);
+                ctx.drawImage(img,0,0);
+                var imageData = ctx.getImageData(0,0,canvas.width, canvas.height);
+				
+				var pixels  = getCanvasImageData(img);
+			
+				
+				
+				
+				
+				
+				var compressed = compressImage(pixels, 5);
+				
+				var decompressed = decompressImage(compressed);
+				
+				for (var i=0; i<imageData.data.length; i++) {
+					imageData.data[i] = decompressed[i];
+					}
+				
+	
+				
+				
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.putImageData(imageData, 0, 0);
+				
+				document.getElementById("content2").appendChild(img);
+				document.getElementById('content2').appendChild(canvas);
+                
+              };
+
+              fr.readAsDataURL(currentFile);
+              
+              
+            
+            	
+				 
+					
+				
+					
+					*/
+              
+              }
+		 
+		  function compressFile() {
+			  var image = new Image();
+              
+	             
+              var canvas = document.createElement("canvas");
+              
+              var ctx = canvas.getContext("2d");
+        		
+              var currentFile = document.getElementById('fileToUpload').files[0];
+              
+              
+              
+             
+              var fr = new FileReader();
+
+              fr.onload = function() { // file is loaded
+                  
+				var img = new Image();
+                img.src = fr.result; // is the data URL because called with readAsDataURL
+                canvas.height = img.height;
+                canvas.width = img.width;
+               
+                
+                document.getElementById('content2').appendChild(img);
+                ctx.drawImage(img,0,0);
+                var imageData = ctx.getImageData(0,0,canvas.width, canvas.height);
+				
+				var pixels  = getCanvasImageData(img);
+			
+				
+				
+				
+				//get quality value from slider
+				
+				var quality = document.getElementById("quality_slider").value;
+				
+				
+				var threshold = (11-quality)*2;
+				
+				
+				var compressed = compressImage(pixels, threshold);
+				
+				var decompressed = decompressImage(compressed,threshold);
+				
+				for (var i=0; i<imageData.data.length; i++) {
+					imageData.data[i] = decompressed[i];
+					}
+				
+	
+				
+				
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.putImageData(imageData, 0, 0);
+				
+				
+				
+				document.getElementById('content2').appendChild(canvas);
+                
+              };
+
+              fr.readAsDataURL(currentFile);
+		  }
+                 
+		      
+		  function uploadFile() {
+		  		
+				alert("Pressed");
+				/*
+		    var fd = new FormData();
+
+		          var count = document.getElementById('fileToUpload').files.length;
+
+		          for (var index = 0; index < count; index ++)
+
+		          {
+
+		                 var file = document.getElementById('fileToUpload').files[index];
+
+		                 fd.append(file.name, file);
+
+		          }
+
+		    var xhr = new XMLHttpRequest();
+
+		    xhr.upload.addEventListener("progress", uploadProgress, false);
+
+		    xhr.addEventListener("load", uploadComplete, false);
+
+		    xhr.addEventListener("error", uploadFailed, false);
+
+		    xhr.addEventListener("abort", uploadCanceled, false);
+
+		    xhr.open("POST", "savetofile.aspx");
+
+		    xhr.send(fd);
+		    */
+		  }
+		  
+	
+ 
+
+ 
+      function uploadProgress(evt) {
+ 
+        if (evt.lengthComputable) {
+ 
+          var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+ 
+          document.getElementById('progress').innerHTML = percentComplete.toString() + '%';
+ 
+        }
+ 
+        else {
+ 
+          document.getElementById('progress').innerHTML = 'unable to compute';
+ 
+        }
+ 
+      }
+ 
+      function uploadComplete(evt) {
+ 
+        /* This event is raised when the server send back a response */
+ 
+        alert(evt.target.responseText);
+ 
+      }
+ 
+      function uploadFailed(evt) {
+ 
+        alert("There was an error attempting to upload the file.");
+ 
+      }
+ 
+      function uploadCanceled(evt) {
+ 
+        alert("The upload has been canceled by the user or the browser dropped the connection.");
+ 
+      }
+     </script>
+		
+	</head>
+	<body class="sapUiBody" role="application">
+		
+		
+		<form id="form1" enctype="multipart/form-data" method="post" action="Upload.aspx">
+ 
+    <div>
+ 
+      <label for="fileToUpload">Foto auswählen oder aufnehmen</label><br />
+ 
+      <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();" accept="image/*;capture=camera" />
+ 
+    </div>
+ 
+    <div id="details"></div>
+ 	<div id="compressButton"></div>
+    <div>
+    	
+      <input type="button" onclick="uploadFile()" value="Upload" />
+ 
+    </div>
+    
+    
+ 
+    <div id="progress"></div>
+ 
+  </form>
+  <p></p>
+ 		 <div id="content2"></div>
+		<div id="content"></div>
+	</body>
+</html>
