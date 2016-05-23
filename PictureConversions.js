@@ -219,8 +219,7 @@ function getCanvasImageData(img) {
  */
 function compressImage(imageData, threshold) {
 	
-	
-	
+
 	// get height + width and remove values from array
 	var height = imageData.height;
 	var width = imageData.width;;
@@ -238,51 +237,70 @@ function compressImage(imageData, threshold) {
 	
 	
 	
-	var z0 = performance.now();
-	var dwtY11 = dwt2D(yMatrix, 4, 4);
-	var dwtY = dwt2Dsplit(yMatrix, 4, 4, 32);
+//	var z0 = performance.now();
+//	var dwtY11 = dwt2D(yMatrix, 4, 1);
+//	var z11 = performance.now();
+//	var dwtY = dwt2Dsplit(yMatrix, 4, 1, 128);
 	
-	var z1 = performance.now();
-//	var dwtCb = dwt2D(cbMatrix, 4, 4);
-	var dwtCb = dwt2Dsplit(cbMatrix, 4, 2, 32);
-	
+//	var z1 = performance.now();
+//	var dwtLustig = dwt2dim(yMatrix, "galle", 0);
 	var z2 = performance.now();
-//	var dwtCr = dwt2D(crMatrix, 4, 4);
-	var dwtCr = dwt2Dsplit(crMatrix, 4, 2, 32);
+	
+	var dwtY = dwt2dimSplit(yMatrix, "galle", 0, 128);
 	var z3 = performance.now();
 	
-	debugger;
+//	var dwtCb = dwt2D(cbMatrix, 4, 4);
+	var dwtCb = dwt2dimSplit(cbMatrix, "galle", 0, 128);
+	var z4 = performance.now();
+	
+//	var dwtCr = dwt2D(crMatrix, 4, 4);
+	var dwtCr = dwt2dimSplit(crMatrix, "galle", 0, 128);
+	var z5 = performance.now();
+//	console.log("dwt alte variante: " +(z11-z0));
+//	console.log("dwt tiling: " +(z1-z11));
+//	console.log("dwt ohne qmf: " +(z2-z1));
+//	console.log("dwt split ohne qmf: " + (z3-z2));
+	
+	console.log("DWT1 split: " + (z3-z2));
+	console.log("DWT2 split: " + (z4-z3));
+	console.log("DWT3 split: " + (z5-z4));
+	
 
-	console.log("DWT1: " +(z1-z0));
-	console.log("DWT2: " +(z2-z1));
-	console.log("DWT3: " +(z3-z2));
-	
-	
 	
 	var dwtYArray = matrixToArray(dwtY);
 	var dwtCbArray = matrixToArray(dwtCb);
 	var dwtCrArray = matrixToArray(dwtCr);
 	
 	
-	
+	var maxValue = numeric.norminf(dwtY);
+	var maxValue2 = numeric.norminf(dwtCb);
+	var maxValue3 = numeric.norminf(dwtCr);
 	
 	
 	var y0 = performance.now();
 	var compressedY = compressMatrix(dwtYArray, threshold);
-	
+	var sizeOfY = getSizeOfMatrix(compressedY, 16);
 	var y1 = performance.now();
+	
 	var compressedYLustig = compressHigh(dwtY, threshold);
 
 	var y2 = performance.now();
 	
+	var compressedY3 = createSparseMatrix(dwtY, threshold);
+	var sizeOfY3 = getSizeOfMatrix(compressedY3, 16);
+	
+	var y3 = performance.now();
+	
 	console.log("compression alt: " + (y1-y0));
 	console.log("compression neu: " + (y2-y1));
+	console.log("compression sparse: " +(y3-y2));
+	debugger;
 	var compressedCb = compressMatrix(dwtCbArray, threshold-1);
 	var compressedCr = compressMatrix(dwtCrArray, threshold-1);
 	
 	
 	// compressMatrices
-	debugger;
+	
 	var compressedYMatrix0 = compressMatrix(dwtY, threshold);
 	var compressedCbMatrix0 =compressMatrix(dwtCb, threshold);
 	var compressedCrMatrix0 = compressMatrix(dwtCr, threshold);

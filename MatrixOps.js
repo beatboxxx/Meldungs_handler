@@ -449,13 +449,16 @@ function padVector(array) {
 };
 
 /**
+ * Pads the matrix to rows, cols = even power of 2 (with zeros)
  * 
  * @param matrix
- * @returns
+ * @returns padded matrix (int8)
  */
 
   function padMatrix(matrix) {
   
+	  
+	  
 		var height = matrix.length;
 		var width = matrix[0].length;
 
@@ -463,16 +466,18 @@ function padVector(array) {
 		var log2Nwidth = Math.log(width) / Math.log(2);
 		var ceilHeight = Math.ceil(log2Nheight);
 		var ceilWidth = Math.ceil(log2Nwidth);
+		var sizePadHeight = Math.pow(2, ceilHeight);
+		var sizePadWidth = Math.pow(2, ceilWidth);
+		
 
-		var matrixCopy = numeric.clone(matrix);
+		
 		
 //		var matrixCopy = cloneMatrix(matrix, 8);
 
 		
 		// var preserveCopy = matrixCopy.slice();
 
-		var sizePadHeight = Math.pow(2, ceilHeight);
-		var sizePadWidth = Math.pow(2, ceilWidth);
+		
 
 		// Number of zeros to be padded
 		var paddingSizeHeight = sizePadHeight - height;
@@ -487,10 +492,10 @@ function padVector(array) {
 
 		// No padding required at all?
 		if (!paddingNeededRow && !paddingNeededColumn) {
-			return matrixCopy;
+			return matrix;
 		}
 
-
+		var matrixCopy = numeric.clone(matrix);
 
 
 		// pad zeros to each row if required
@@ -526,6 +531,90 @@ function padVector(array) {
 		// matrix = preserveCopy;
 		return matrixToInt8(matrixCopy);
   };
+  
+  /**
+   * Pads the matrix to rows, cols = even power of 2 (with zeros)
+   * 
+   * @param matrix
+   * @returns paddedMatrix(float-values)
+   */
+  function padMatrixFloat(matrix) {
+	  
+	  
+	  
+		var height = matrix.length;
+		var width = matrix[0].length;
+
+		var log2Nheight = Math.log(height) / Math.log(2);
+		var log2Nwidth = Math.log(width) / Math.log(2);
+		var ceilHeight = Math.ceil(log2Nheight);
+		var ceilWidth = Math.ceil(log2Nwidth);
+		var sizePadHeight = Math.pow(2, ceilHeight);
+		var sizePadWidth = Math.pow(2, ceilWidth);
+		
+
+		
+		
+//		var matrixCopy = cloneMatrix(matrix, 8);
+
+		
+		// var preserveCopy = matrixCopy.slice();
+
+		
+
+		// Number of zeros to be padded
+		var paddingSizeHeight = sizePadHeight - height;
+		var paddingSizeWidth = sizePadWidth - width;
+
+		var zeroVector = [ 0 ];
+
+
+
+		var paddingNeededRow = paddingSizeWidth != 0;
+		var paddingNeededColumn = paddingSizeHeight != 0;
+
+		// No padding required at all?
+		if (!paddingNeededRow && !paddingNeededColumn) {
+			return numeric.clone(matrix);
+		}
+
+		var matrixCopy = numeric.clone(matrix);
+
+
+		// pad zeros to each row if required
+		if (paddingNeededRow) {
+			for (var i = 0; i < height; i++) {
+
+
+
+				for (var j = 0; j < paddingSizeWidth; j++) {
+					matrixCopy[i].push(0);
+				}
+
+
+
+			}
+		}
+
+		// Create Zero-Vectors for the last rows of the matrix and
+		// append them to the matrix if required
+		if (paddingNeededColumn) {
+
+
+
+			for (var i = 0; i < sizePadWidth - 1; i++) {
+				zeroVector.push(0);
+			}
+
+			for (var i = 0; i < paddingSizeHeight; i++) {
+				matrixCopy.push(zeroVector);
+			}
+		}
+
+		// matrix = preserveCopy;
+		return matrixCopy;
+};
+
 
 /**
  * Pad Matrix with own Matrix-impl.
@@ -977,6 +1066,23 @@ function compressHigh(matrix, quality) {
 	return compressed;
 }
 
+
+function createSparseMatrix(matrix, quality) {
+	threshold = thresholdValue(matrix, quality)
+	
+	var rows = matrix.length;
+	
+	var compressed = new Array(rows);
+	
+	// depp copy matrix
+	for(var i = 0; i<rows; i++) {
+		compressed[i] = createSparseVector(matrix[i], 0, threshold);
+	}
+	
+	
+	
+	return compressed;
+}
 
 /**
  * Transforms a vector into a sparse vector, beginning at start.

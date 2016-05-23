@@ -28,11 +28,11 @@
 
 	/**
 	 * Lowpass-Filter, the original version supports other wavelets (Haar,
-	 * Beylkin), but this function only supports Daubechies-Wavelets.
+	 * Beylkin), but this function only supports "daub"echies-Wavelets.
 	 * 
 	 * 
 	 * @param order
-	 * order of the Daubechies-Wavelet @ return high pass filter for QMF pair
+	 * order of the "daub"echies-Wavelet @ return high pass filter for QMF pair
 	 * @return Low Pass filter for QMF pair
 	 */
 	function getLowPass(order) {
@@ -115,4 +115,140 @@
 		}
 		}
 	};
+	/**
+	 * Returns vector with analysis highpass filter coefficients
+	 * 
+	 * (source paper JPEG2000: The upcoming still image compression standard)
+	 * 
+	 * @param wavelet ("daub","galle") daubechies or le galle
+	 * @returns vector with analysis filter coefficients
+	 */
+	function getHighPassAnalysis(wavelet) {
+		
+		if(wavelet == "galle") {
+			var f = [-0.5, //position -1 
+			        1,	  //position 0
+			        -0.5]; //position 1
+			return f;
+		} else if(wavelet == "daub") {
+			var f = [0.091271763114,   //-3
+                     -0.057543526229,  //-2
+                     -0.591271763114,  //-1
+                         1.11508705,   //0
+                     -0.591271763114,  //1
+                     -0.057543526229,  //2
+                     0.091271763114  //3
+			        ];
+			return f;
+		} else{
+			alert("wavelet must be daub or galle");
+		}
+		
+	
+		};
+		
+		/**
+		 * Returns vector with synthesis filter highpass coefficients
+		 * 
+		 * (source paper JPEG2000: The upcoming still image compression standard)
+		 * 
+		 * @param wavelet ("daub","galle") daubechies or le galle
+		 * @returns vector with synthesis highpass filter coefficients
+		 */
+		function getHighPassSynthesis(wavelet) {
+			
+			if(wavelet == "galle") {
+				var f = [-0.125, //-2
+                        -0.25,   //-1
+                        0.75,   // 0
+                        -0.25,   // 1
+                       -0.125];// 2 
+				return f;
+			} else if(wavelet == "daub") {
+				var f = [0.026748757411,   //-4
+				         0.016864118443,   //-3
+                         -0.078223266529,   //-2
+                         -0.266864118443,   //-1
+                          0.602949018236,   //0
+                         -0.266864118443,   //1
+                         -0.078223266529,   //2
+                          0.016864118443,   //3
+                          0.026748757411
+				        ];
+				        
+				
+			return f;
+			} else{
+				alert("wavelet must be daub or galle");
+			}
+			};
+			
+			/**
+			 * Returns vector with analysis lowpass filter coefficients
+			 * 
+			 * (source paper JPEG2000: The upcoming still image compression standard)
+			 * 
+			 * @param wavelet ("daub","galle") daubechies or le galle
+			 * @returns vector with synthesis highpass filter coefficients
+			 */
+			function getLowPassAnalysis(wavelet) {
+				
+				if(wavelet == "galle") {
+					var f = [-0.125, //-2
+	                        0.25,   //-1
+	                        0.75,   // 0
+	                        0.25,   // 1
+	                       -0.125];// 2 
+					return f;
+				} else if(wavelet == "daub") {
+					var f = [ 0.026748757411,  //-4
+	                            -0.016864118443, //-3
+	                            -0.078223266529, //-2
+	                            0.266864118443,  //-1
+	                            0.602949018236,  //0
+	                            0.266864118443,  //1
+	                            -0.078223266529, //2
+	                            -0.016864118443, //3
+	                            0.026748757411]; //4
+
+					        
+					
+				return f;
+				} else{
+					alert("wavelet must be daub or galle");
+				}
+				};
+				
+				/**
+				 * Returns vector with analysis lowpass filter coefficients
+				 * 
+				 * (source paper JPEG2000: The upcoming still image compression standard)
+				 * 
+				 *@param wavelet ("daub","galle") daubechies or le galle
+				 * @returns vector with synthesis highpass filter coefficients
+				 */
+				function getLowPassSynthesis(wavelet) {
+					
+					if(wavelet == "galle") {
+						var f = [0.5, //position -1 
+						        1,	  //position 0
+						        0.5]; //position 1
+						return f;
+					} else if(wavelet == "daub") {
+						var f = [-0.091271763114,   //-3
+			                     -0.057543526229,  //-2
+			                     0.591271763114,  //-1
+			                         1.11508705,   //0
+			                     0.591271763114,  //1
+			                     -0.057543526229,  //2
+			                     -0.091271763114  //3
+						        ];
+						return f;
+					} else{
+						alert("wavelet must be daub or galle");
+					}
+					};
+	
+	
+	
 

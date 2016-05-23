@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>		
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+
+		<script src="resources/sap-ui-core.js"
+				id="sap-ui-bootstrap"
+				data-sap-ui-libs="sap.m, sap.ui.commons"
+				data-sap-ui-theme="sap_bluecrystal">
+		</script>
+		<!-- <script type="text/javascript" src="//api.filestackapi.com/filestack.js"></script> -->
+		
+		<!-- <input type="filepicker" data-fp-apikey="A8FJO85gsTRazpM8R9Mi0z"
+		onchange="alert(event.fpfile.url)"></input> -->
+		<script type="text/javascript"
+   		 src="http://bp.yahooapis.com/2.4.21/browserplus-min.js">
+		</script>
+		<script type="text/javascript"
+   		 src="PictureConversions.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="OrthogonalFilters.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="DWT.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="math.min.js">
+		</script>
+		
+	 	
+		<script type="text/javascript"
+   		 src="MatrixOps.js">
+		</script> 
+		<script type="text/javascript"
+   		 src="numeric-1.2.6.min.js">
+		</script> 
+</head>
+<body>
+<script>
+	
+	
+	var vector = [5,3,6,7,8,4,7,8,9,6,4,2,10,17,28,4];
+	
+	var matrix = arrayToMatrix(vector, 4, 4);
+	
+	var dwt = dwt2dim(matrix, "galle", 0);
+	
+	debugger;
+	</script>
+</body>
+</html>

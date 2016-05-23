@@ -69,6 +69,172 @@ function forwardDwt(signalVector, order, cScale) {
 	}
 	
 	return arrayToInt16(dWT);
+};
+
+
+
+/**
+ * Calculates the dwt of a vector (filterbank-approach), depth 2
+ * 
+ * @param signalVector signal vector with length = even power of two
+ * @param wavelet daubechies 9/7 or le galle 5/3 (daub, galle)
+ * 
+ * @return the wavelet transform
+ */
+function dwt(signalVector, wavelet) {
+	
+	var signalLen = signalVector.length;
+	var result = new Array(signalLen);
+	var LP = getLowPassAnalysis(wavelet);
+	var HP = getHighPassAnalysis(wavelet);
+	
+	var filterLenLP = LP.length;
+	var filterLenHP = HP.length;
+	var k = 0;
+	
+	
+	//low pass filtering, beginning at 0.
+	//index skip of 2 because of later downsampling
+	for(var i = 0; i< signalVector.length; i+=2) {
+		var resultValue = 0;
+		for(var j = - math.floor(filterLenLP/2); j< math.ceil(filterLenLP/2); j++) {
+			
+			//floor necessary because of index ranges -x...+x at filters
+			resultValue += signalVector[math.mod((i-j), signalLen)] * LP[j + math.floor(filterLenLP/2)];
+		}
+		result[k]=resultValue;
+		k++;
+	}
+	
+	
+	//high pass filtering, beginning at 1.
+	//index skip of 2 because of later downsampling
+	for(var i = 1; i< signalVector.length; i+=2) {
+		var resultValue = 0;
+		for(var j = - math.floor(filterLenHP/2); j< math.ceil(filterLenHP/2); j++) {
+			
+			//floor necessary because of index ranges -x...+x at filters
+			resultValue += signalVector[math.mod((i-j), signalLen)] * HP[j + math.floor(filterLenHP/2)];
+		}
+		result[k]=resultValue;
+		k++;	
+	}
+	
+	return result;
+};
+/**
+ * Calculates the idwt of a vector (filter-bank approach), depth 2
+ * 
+ * @param signalVector the DWT of a vector
+ * @param wavelet daubechies 9/7 or le galle 5/3 ("daub", "galle")
+ * @return result the iDWT (i.e. signal)
+ */
+function idwt(signalVector, wavelet) {
+	
+	var signalLen = signalVector.length;
+	var result = new Array(signalLen);
+	var LP = getLowPassSynthesis(wavelet);
+	var HP = getHighPassSynthesis(wavelet);
+	var lpVector = signalVector.slice(0, signalLen/2);
+	var hpVector = signalVector.slice(signalLen/2);
+	
+	var resultLow = new Array(signalLen/2);
+	var resultHigh = new Array(signalLen/2);
+	
+	var filterLenLP = LP.length;
+	var filterLenHP = HP.length;
+	var k = 0;
+	
+	
+	// low pass synthesis, taking first half of signalVector
+	for(var i = 0; i < signalLen; i++) {
+		
+		var resultValue = 0;
+		for(var j = - math.floor(filterLenLP/2); j< math.ceil(filterLenLP/2); j++) {
+			
+			// only multiply when even numbers (vector is upsampled!)
+			if(math.mod((i-j), signalLen) % 2 === 0 ) {
+			resultValue += lpVector[math.mod(((i-j)/2), signalLen/2)] * LP[j + math.floor(filterLenLP/2)];
+			}
+			
+		}
+			resultLow[i] = resultValue;
+	}
+	
+	// high pass synthesis, taking second half of signalVector
+	for(var i = 0; i < signalLen; i++) {
+		
+		var resultValue = 0;
+		for(var j = - math.floor(filterLenHP/2); j< math.ceil(filterLenHP/2); j++) {
+			
+			// only multiply when odd numbers (vector is upsampled!)
+			if(math.mod((i-j), signalLen) % 2 === 1 ) {
+			resultValue += hpVector[math.mod(((i-j)-1)/2, signalLen/2)] * HP[j + math.floor(filterLenHP/2)];
+			}
+			
+		}
+		resultHigh[i] = resultValue;
+	}
+	result = numeric.add(resultLow, resultHigh);
+		
+	return result;
+};
+
+/**
+ * Performs a 2D wavelet transform of a matrix, cascading on the LL (upper-left-part)
+ * until the lower value of row/cols = 2^cScale
+ * 
+ * @param matrix
+ * @param wavelet "daub" or "galle" for daubechies 9/7 or le galle 5/3 wavelets 
+ * @param cScale specifies how small the lowest LL part is (2^cScale  x  2^scale + X)
+ * 		  minimum = 0
+ */
+function dwt2dim(matrix, wavelet, cScale) {
+	
+	
+	var resultMatrix = padMatrixFloat(matrix);
+	
+	var rows = resultMatrix.length;
+	var cols = resultMatrix[0].length;
+	var logCols = Math.log(cols)/Math.log(2);
+	var logRows = Math.log(rows)/Math.log(2);
+	var minLog = Math.min(logCols, logRows);
+	
+	// if cScale to big => set to minimum value
+	if(cScale > minLog) {
+		cScale = minLog;
+	}
+	
+	var iterations = minLog-cScale+1;
+	
+	
+	for(var i = 0; i < iterations; i++) {
+		
+		// get LL part of Matrix
+		
+		var llMatrix = numeric.getBlock(resultMatrix, [0,0], [rows-1, cols-1]);
+		
+		// iterate over rows
+		for(var j = 0; j < rows; j++) {
+			llMatrix[j] = dwt(llMatrix[j], wavelet);
+		}
+		
+		
+		// iterate over columns
+		for(var j = 0; j < cols; j++) {
+			llMatrix = replaceColumn(llMatrix, j, dwt(getColumnAsVector(llMatrix, j), wavelet));
+		}
+		
+		// save calculated dwt back to the matrix
+		numeric.setBlock(resultMatrix, [0,0], [rows-1, cols-1],llMatrix);
+		
+		// resume on LL part of matrix
+		cols = cols/2;
+		rows = rows/2;
+		
+	}
+	
+	return resultMatrix;
 }
 	
 
@@ -737,6 +903,91 @@ function dwt2Dsplit(matrix, order, cScale, splitSize) {
 	return(matrix);
 	
 
+	
+	
+	
+}
+
+function dwt2dimSplit(matrix, wavelet, cScale, splitSize) {
+	
+	//create non-int8 version
+	
+	
+	var matrix = numeric.clone(matrix);
+	
+	// desired splitSize > size of matrix
+	if((matrix.length < splitSize) || (matrix[0].length < splitSize)) {
+		return dwt2dim(matrix, wavelet, cScale);
+	}
+	
+	
+	
+	var horNumbers = Math.ceil(matrix[0].length/splitSize);
+	
+	
+	var vertNumbers = Math.ceil(matrix.length/splitSize);
+	var iterations = vertNumbers * horNumbers;
+	var xIndex = 0;
+	var yIndex = 0;
+	var endY;
+	var endX;
+	
+	var widthX = horNumbers*splitSize;
+	var differenceY = (vertNumbers*splitSize) - matrix.length;
+	
+	// pad zero-vectors at the y-site of the matrix
+	for(var i = 0; i < differenceY; i++) {
+		matrix.push(numeric.rep([widthX], 0));
+	}
+
+	for(var i = 0; i<iterations; i++) {
+		
+		
+		//if block-square reaches the edge => padding with zeros later
+		if(yIndex+splitSize > matrix.length) {
+			endY = matrix.length-1;
+		} else {
+			endY = yIndex + splitSize-1;
+		}
+		
+		if(xIndex+splitSize > matrix[0].length) {
+			endX = matrix[0].length-1;
+		} else {
+			endX = xIndex + splitSize-1;
+		}
+				
+		var block = numeric.getBlock(matrix, [yIndex, xIndex], [endY, endX]);
+		
+		// padding with zeros if required
+		if(block.length != block[0].length) {
+			
+			var mat = numeric.rep([splitSize, splitSize], 0);
+			numeric.setBlock(mat, [0,0], [block.length-1, block[0].length-1], block);
+			block = mat;
+		}
+		
+		block = dwt2dim(block, wavelet, cScale);
+		
+		
+		
+		matrix = numeric.setBlock(matrix, [yIndex, xIndex], [yIndex+splitSize-1, xIndex+splitSize-1], block);
+		
+		// end of line reached
+		if(xIndex + splitSize >= matrix[0].length) {
+			xIndex = 0;
+			yIndex += splitSize;
+		} else {
+			xIndex += splitSize;
+		}
+	}
+	
+	var splitArray = [splitSize];
+	
+	matrix.push(splitArray);
+	
+//	matrix = matrixToInt16(matrix);
+	
+	return(matrix);
 	
 	
 	
